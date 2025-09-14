@@ -8,7 +8,10 @@
   "author": "Uriel Curiel <urielcuriel@outlook.com>",
   "license": "MIT",
   "bin": {
-    "fa-2-iconify": "index.ts"
+    "fa-2-iconify": "bin/fa-2-iconify.js"
+  },
+  "scripts": {
+    "build": "bun build ./index.ts --outfile ./bin/fa-2-iconify.js --target bun"
   },
   "devDependencies": {
     "@types/bun": "latest"
