@@ -729,7 +729,7 @@ bun run dev
 4. Download the **Desktop** version (not Web)
 5. Extract the kit to a directory
 6. Place this converter script in the kit directory
-7. Run: \`bun run index.ts\`
+7. Run: \`bunx fa-2-iconify\`
 
 ## License
 

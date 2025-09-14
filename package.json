@@ -2,7 +2,14 @@
   "name": "fa-2-iconify",
   "module": "index.ts",
   "type": "module",
-  "private": true,
+  "private": false,
+  "version": "1.0.0",
+  "description": "Convert FontAwesome Pro icon sets to Iconify format",
+  "author": "Uriel Curiel <urielcuriel@outlook.com>",
+  "license": "MIT",
+  "bin": {
+    "fa-2-iconify": "index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
