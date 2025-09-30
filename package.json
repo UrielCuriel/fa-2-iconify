@@ -21,6 +21,6 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.11.0",
-    "@iconify/utils": "^3.0.1"
+    "@iconify/utils": "^3.0.2"
   }
 }

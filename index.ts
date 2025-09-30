@@ -66,21 +66,36 @@ const OUTPUT_PACKAGE_STRUCTURE = {
 // TYPE DEFINITIONS
 // ============================================================================
 
-interface FontAwesomeIcon {
-    svg: {
-        path: string;
-        width: number;
-        height: number;
-        viewBox: [number, number, number, number];
+interface FontAwesomeIconAliases {
+    names?: string[];
+    unicodes?: {
+        secondary?: string[];
     };
-    search: {
-        terms: string[];
+}
+
+type SvgPathData = string | string[];
+
+interface SvgData {
+    height?: number;
+    path?: SvgPathData;
+    raw?: string;
+    viewBox?: [number, number, number, number];
+    width?: number;
+}
+
+interface FontAwesomeIcon {
+    aliases?: FontAwesomeIconAliases;
+    changes: string[];
+    free: string[];
+    label: string;
+    ligatures: string[];
+    search?: {
+        terms?: string[];
     };
     styles: string[];
+    svg: Record<string, SvgData>;
     unicode: string;
-    free: string[];
-    changes: string[];
-    ligatures: string[];
+    voted?: boolean;
 }
 
 interface FontAwesomeMetadata {
@@ -206,14 +221,15 @@ async function parseSvgFile(filePath: string): Promise<{ body: string; width: nu
 
         if (!viewBoxMatch?.[1]) return null;
 
-        // Extract path data (simplified - in real implementation, handle all SVG elements)
-        const pathMatch = content.match(/<path[^>]*d="([^"]+)"/);
-        if (!pathMatch?.[1]) return null;
+        const bodyMatch = content.match(/<svg[^>]*>([\s\S]*?)<\/svg>/i);
+        const body = bodyMatch?.[1]?.trim();
+
+        if (!body) return null;
 
         return {
-            body: pathMatch[1],
-            width: widthMatch?.[1] ? parseInt(widthMatch[1]) : 24,
-            height: heightMatch?.[1] ? parseInt(heightMatch[1]) : 24,
+            body,
+            width: widthMatch?.[1] ? parseInt(widthMatch[1], 10) : 24,
+            height: heightMatch?.[1] ? parseInt(heightMatch[1], 10) : 24,
             viewBox: viewBoxMatch[1]
         };
     } catch (error) {
@@ -274,6 +290,43 @@ function insertIcon(db: Database, iconData: IconData): void {
         iconData.unicode,
         JSON.stringify(iconData.searchTerms)
     );
+}
+
+function extractBodyFromRawSvg(raw?: string): string | null {
+    if (!raw) return null;
+    const bodyMatch = raw.match(/<svg[^>]*>([\s\S]*?)<\/svg>/i);
+    if (bodyMatch?.[1]) {
+        const trimmed = bodyMatch[1].trim();
+        return trimmed.length > 0 ? trimmed : null;
+    }
+    return null;
+}
+
+function buildSvgBody(svgData: SvgData): string | null {
+    const rawBody = extractBodyFromRawSvg(svgData.raw);
+    if (rawBody) {
+        return rawBody;
+    }
+
+    if (!svgData.path) return null;
+
+    const pathList = Array.isArray(svgData.path) ? svgData.path : [svgData.path];
+    const elements = pathList
+        .filter((segment): segment is string => typeof segment === 'string' && segment.trim().length > 0)
+        .map(segment => `<path d="${segment}" fill="currentColor" />`);
+
+    if (elements.length === 0) {
+        return null;
+    }
+
+    return elements.join('\n');
+}
+
+function formatViewBox(svgData: SvgData, fallbackWidth: number, fallbackHeight: number): string {
+    if (Array.isArray(svgData.viewBox) && svgData.viewBox.length === 4) {
+        return svgData.viewBox.join(' ');
+    }
+    return `0 0 ${fallbackWidth} ${fallbackHeight}`;
 }
 
 /**
