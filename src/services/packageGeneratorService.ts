@@ -51,8 +51,8 @@ export async function generatePackage(db: Database, config: KitConfig): Promise<
       styleSets[style] = {
         prefix,
         icons: iconifyIcons,
-        width: 24,
-        height: 24,
+        width: 512,
+        height: 512,
         info: {
           name: `${config.iconSetName} ${styleName}`,
           total: icons.length,
